@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Triagent — 오픈소스 이슈 자동 트리아지 API</title>
+<title>Triagent — 오픈소스 이슈 자동 대응 에이전트</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -130,13 +130,47 @@
     font-size: 12px;
   }
   .status-line { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  #remediation {
+    display: none;
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #0b1220;
+  }
+  #remediation h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  #remediation .diagnosis { font-size: 14px; margin-bottom: 10px; }
+  #remediation ul { margin: 0 0 12px; padding-left: 20px; font-size: 13px; }
+  #remediation ul li { margin-bottom: 4px; }
+  .status-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .status-flow .pill {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .status-flow .pill.before { color: var(--muted); }
+  .status-flow .pill.after { color: var(--community); border-color: var(--community); }
+  .sim-notice { font-size: 11.5px; color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
 <header>
   <div class="label">Triagent · 참고 논문</div>
   <h1>클라우드 네이티브 오픈소스 프로젝트에서 활성 기여자 수와 이슈 처리 시간의 관계</h1>
-  <p class="sentence">오픈소스 프로젝트에 새로운 이슈가 등록될 때, 이 API가 현재 기여자 수에 따른 '조율 비용 지연 위험'을 계산하고 이슈를 최적의 팀에 자동 라우팅(분배)하여 메인테이너를 돕습니다.</p>
+  <p class="sentence">오픈소스 프로젝트에 새로운 이슈가 등록되면, 이 API가 현재 기여자 수 데이터를 즉시 분석해 '조율 비용 지연 위험'을 진단하고, 담당팀 배정·SLA 타이머 시작 같은 해결 조치를 자동으로 실행해 이슈가 미배정 상태로 정체되지 않도록 정상화합니다.</p>
 </header>
 
 <main>
@@ -157,14 +191,27 @@
   </section>
 
   <section class="panel">
-    <h2>2. 서버 응답</h2>
+    <h2>2. 분석 → 해결 → 정상화</h2>
     <div id="badge"></div>
+    <div id="remediation">
+      <h3>진단</h3>
+      <div class="diagnosis" id="diagnosisText"></div>
+      <h3>실행된 조치</h3>
+      <ul id="stepsList"></ul>
+      <h3>이슈 상태 변화</h3>
+      <div class="status-flow">
+        <span class="pill before" id="statusBefore"></span>
+        <span>→</span>
+        <span class="pill after" id="statusAfter"></span>
+      </div>
+      <div class="sim-notice" id="simNotice"></div>
+    </div>
     <pre id="result">아직 요청을 보내지 않았습니다.</pre>
   </section>
 </main>
 
 <footer>
-  이 화면은 가상의 GitHub Webhook 데이터를 흉내 낸 API 테스트 대시보드입니다. 실제 개인정보는 포함되어 있지 않습니다.
+  이 화면은 가상의 GitHub Webhook 데이터를 흉내 낸 API 테스트 대시보드입니다. 실제 개인정보는 포함되어 있지 않고, 자동 실행 조치는 실제 GitHub 저장소를 바꾸지 않는 시뮬레이션입니다.
 </footer>
 
 <script>
@@ -172,6 +219,12 @@ const payloadEl = document.getElementById('payload');
 const resultEl = document.getElementById('result');
 const badgeEl = document.getElementById('badge');
 const sendBtn = document.getElementById('sendBtn');
+const remediationEl = document.getElementById('remediation');
+const diagnosisTextEl = document.getElementById('diagnosisText');
+const stepsListEl = document.getElementById('stepsList');
+const statusBeforeEl = document.getElementById('statusBefore');
+const statusAfterEl = document.getElementById('statusAfter');
+const simNoticeEl = document.getElementById('simNotice');
 
 const examples = {
   high: { project_name: "Envoy", issue_title: "Memory leak detected", active_contributors: 68 },
@@ -202,6 +255,7 @@ sendBtn.addEventListener('click', async () => {
 
   resultEl.textContent = '요청 전송 중...';
   badgeEl.innerHTML = '';
+  remediationEl.style.display = 'none';
 
   try {
     const res = await fetch('/api/triage', {
@@ -213,10 +267,18 @@ sendBtn.addEventListener('click', async () => {
 
     if (!res.ok) {
       setBadge(`서버 거부 (HTTP ${res.status})`, 'error');
-    } else if (data.routing_decision === 'Core Team') {
-      setBadge('routing_decision: Core Team', 'core');
     } else {
-      setBadge('routing_decision: Community Pool', 'community');
+      if (data.routing_decision === 'Core Team') {
+        setBadge('routing_decision: Core Team', 'core');
+      } else {
+        setBadge('routing_decision: Community Pool', 'community');
+      }
+      diagnosisTextEl.textContent = data.diagnosis;
+      stepsListEl.innerHTML = data.executed_steps.map((s) => `<li>✓ ${s}</li>`).join('');
+      statusBeforeEl.textContent = data.status_before;
+      statusAfterEl.textContent = data.status_after;
+      simNoticeEl.textContent = data.simulation_notice;
+      remediationEl.style.display = 'block';
     }
 
     resultEl.textContent = JSON.stringify(data, null, 2);
