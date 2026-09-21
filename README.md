@@ -8,15 +8,37 @@
 
 ## 실행 방법 (Windows PowerShell 기준)
 
+### 1) 백엔드 (FastAPI)
+
 ```powershell
-cd issue-triage-api
 python -m venv venv
 venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-서버가 뜨면 브라우저에서 `http://localhost:8000` 접속.
+서버가 뜨면 브라우저에서 `http://localhost:8000` 접속 — 기존 HTML 대시보드를 바로 확인할 수 있다.
+
+### 2) 프론트엔드 (React, `frontend/`)
+
+같은 백엔드 API(`/api/triage`)를 사용하는 반응형 React 앱이 `frontend/` 폴더에 추가되었다.
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+`http://localhost:5173` 접속. 개발 서버는 `/api` 요청을 `http://localhost:8000`으로 프록시하므로 (`vite.config.js`), 백엔드가 먼저 떠 있어야 한다.
+
+배포용 정적 빌드가 필요하면:
+
+```powershell
+cd frontend
+npm run build
+```
+
+`frontend/dist/`에 결과물이 생성된다 (별도 정적 호스팅에 배포하거나 FastAPI에서 서빙 가능).
 
 ## 확인 방법 (사용자가 할 일 세 가지)
 
