@@ -8,6 +8,8 @@
 
 ## 실행 방법 (Windows PowerShell 기준)
 
+프론트엔드(React)는 이미 빌드되어 `static/`에 포함되어 있어, **Python만 있으면 된다** (Node.js 불필요).
+
 ```powershell
 cd issue-triage-api
 python -m venv venv
@@ -17,6 +19,17 @@ uvicorn main:app --reload
 ```
 
 서버가 뜨면 브라우저에서 `http://localhost:8000` 접속.
+
+### 프론트엔드 소스를 직접 수정하고 싶다면
+
+`frontend/`에 React(Vite) 소스가 들어 있다. 수정 후 다시 빌드하면 `static/`이 갱신된다.
+
+```powershell
+cd frontend
+npm install
+npm run dev      # 개발 중 미리보기 (localhost:5173, /api는 8000으로 프록시됨)
+npm run build    # ../static 에 정적 파일로 빌드 (백엔드가 서빙)
+```
 
 ## 확인 방법 (사용자가 할 일 세 가지)
 
@@ -42,11 +55,16 @@ uvicorn main:app --reload
 
 ```text
 issue-triage-api/
-├── main.py            FastAPI 서버 로직 및 API 엔드포인트
-├── templates/
-│   └── index.html     API 테스트용 프론트엔드 대시보드
-├── requirements.txt   의존성 목록
-└── README.md          본 문서
+├── main.py            FastAPI 서버 로직 및 API 엔드포인트, static/ 서빙
+├── static/             React 빌드 결과물 (커밋되어 있어 바로 실행 가능)
+│   ├── index.html
+│   └── assets/
+├── frontend/           React(Vite) 소스 — 대시보드 UI, 반응형 레이아웃
+│   └── src/
+│       ├── App.jsx     요청 폼 + 진단/조치/정상화 결과 렌더링
+│       └── App.css     다크 테마 + 모바일/데스크톱 반응형 스타일
+├── requirements.txt    Python 의존성 목록
+└── README.md           본 문서
 ```
 
 ## 동료 피드백
@@ -59,6 +77,6 @@ issue-triage-api/
 
 ## AI와 나의 판단 (회고)
 
-1. **AI에게 맡긴 일:** FastAPI 뼈대 코드 작성, API 테스트용 HTML 대시보드 UI 생성, "분석 → 해결 → 정상화" 흐름을 보여주는 응답 구조(진단/조치/실행 결과) 설계.
+1. **AI에게 맡긴 일:** FastAPI 뼈대 코드 작성, "분석 → 해결 → 정상화" 흐름을 보여주는 응답 구조(진단/조치/실행 결과) 설계, 바닐라 JS 대시보드를 React(Vite) 기반 반응형 UI로 재작성.
 2. **내가 직접 판단한 일:** 논문 결론(기여자 수 증가 → 조율 비용 증가 → 처리 지연 위험)을 바탕으로 기여자 수 기준(threshold=25) 라우팅 분기 로직을 설계한 것. 처음엔 단순 라우팅(누구에게 보낼지)만 했는데, 실제로 문제를 진단하고 조치까지 자동 실행하는 형태를 원해서 진단·권장조치·실행조치·정상화 상태를 응답에 추가하도록 방향을 잡았다.
 3. **AI 제안을 따르지 않은 일:** 외부 DB 연동이나 복잡한 인증 절차를 붙이자는 제안, 그리고 실제 GitHub API에 써서 진짜로 이슈를 라벨링·배정하자는 제안도 있었으나, 실제 저장소 쓰기 권한과 부작용 위험까지 감수할 필요는 없다고 판단해 "실제 조치를 실행한 것처럼 보여주되 GitHub는 건드리지 않는" 시뮬레이션으로 범위를 유지했다(`simulation_notice` 필드로 명시).
