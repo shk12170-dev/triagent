@@ -10,9 +10,8 @@ from pydantic import BaseModel, Field
 app = FastAPI(title="Triagent — 오픈소스 이슈 자동 대응 에이전트")
 
 BASE_DIR = Path(__file__).resolve().parent
-INDEX_HTML_PATH = BASE_DIR / "templates" / "index.html"
-FRONTEND_DIST_DIR = BASE_DIR / "frontend" / "dist"
-FRONTEND_INDEX_HTML = FRONTEND_DIST_DIR / "index.html"
+STATIC_DIR = BASE_DIR / "static"
+INDEX_HTML_PATH = STATIC_DIR / "index.html"
 
 # 논문 재분석 결과(특이값 Envoy 제외 시 r=+0.226, p=0.017)에서 근거를 둔 임계값.
 # 기여자 수가 이 값 이상이면 조율 비용 증가로 인한 처리 지연 위험이 유의하게 커진다고 판단한다.
@@ -63,8 +62,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@app.get("/legacy", response_class=FileResponse)
-def legacy_dashboard():
+app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+
+@app.get("/", response_class=FileResponse)
+def dashboard():
     return FileResponse(INDEX_HTML_PATH)
 
 

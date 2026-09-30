@@ -1,71 +1,105 @@
-.app {
-  min-height: 100vh;
+.page {
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-header.app-header {
-  padding: 24px 32px 16px;
+.header {
+  padding: 20px 16px 14px;
   border-bottom: 1px solid var(--border);
 }
 
-header.app-header .label {
+@media (min-width: 640px) {
+  .header {
+    padding: 24px 32px 16px;
+  }
+}
+
+.header .label {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-header.app-header h1 {
+.header h1 {
   margin: 6px 0 10px;
-  font-size: 20px;
+  font-size: 18px;
+  line-height: 1.35;
 }
 
-header.app-header p.sentence {
+@media (min-width: 640px) {
+  .header h1 {
+    font-size: 20px;
+  }
+}
+
+.header .sentence {
   margin: 0;
   color: var(--text);
   max-width: 900px;
-  font-size: 15px;
+  font-size: 14px;
 }
 
-main.app-main {
-  display: flex;
-  gap: 20px;
-  padding: 24px 32px;
-  flex-wrap: wrap;
+@media (min-width: 640px) {
+  .header .sentence {
+    font-size: 15px;
+  }
+}
+
+.main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+@media (min-width: 900px) {
+  .main {
+    flex-direction: row;
+    gap: 20px;
+    padding: 24px 32px;
+    align-items: flex-start;
+  }
 }
 
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 20px;
-  flex: 1 1 360px;
+  padding: 16px;
+  flex: 1;
   min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .panel {
+    padding: 20px;
+  }
 }
 
 .panel h2 {
   margin-top: 0;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--accent);
 }
 
-.status-line {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 8px;
+@media (min-width: 640px) {
+  .panel h2 {
+    font-size: 15px;
+  }
 }
 
-textarea#payload {
+.payload {
   width: 100%;
-  min-height: 160px;
+  min-height: 140px;
   background: #0b1220;
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 12px;
-  font-family: 'Consolas', monospace;
+  font-family: "Consolas", "SFMono-Regular", monospace;
   font-size: 13px;
   resize: vertical;
 }
@@ -81,10 +115,11 @@ textarea#payload {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
+  min-height: 36px;
 }
 
 .presets button:hover {
@@ -95,7 +130,7 @@ textarea#payload {
 .send-btn {
   margin-top: 12px;
   width: 100%;
-  padding: 12px;
+  padding: 13px;
   background: var(--accent);
   color: #04141f;
   border: none;
@@ -105,25 +140,34 @@ textarea#payload {
   cursor: pointer;
 }
 
-.send-btn:hover:not(:disabled) {
+.send-btn:hover {
   opacity: 0.9;
 }
 
 .send-btn:disabled {
   opacity: 0.6;
-  cursor: not-allowed;
+  cursor: default;
 }
 
-pre#result {
+.placeholder {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.result {
   background: #0b1220;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 14px;
-  min-height: 160px;
+  min-height: 120px;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 13px;
-  overflow-x: auto;
+  font-size: 12.5px;
+  margin-top: 12px;
+}
+
+.result.error-text {
+  color: var(--error);
 }
 
 .badge {
@@ -150,40 +194,42 @@ pre#result {
   color: var(--error);
 }
 
-footer.app-footer {
-  padding: 16px 32px 32px;
-  color: var(--muted);
+.status-line {
   font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
 }
 
-#remediation {
-  margin-bottom: 16px;
+.remediation {
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #0b1220;
 }
 
-#remediation h3 {
+.remediation h3 {
   margin: 0 0 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-#remediation .diagnosis {
-  font-size: 14px;
-  margin-bottom: 10px;
+.remediation h3:not(:first-child) {
+  margin-top: 14px;
 }
 
-#remediation ul {
-  margin: 0 0 12px;
+.remediation .diagnosis {
+  font-size: 14px;
+}
+
+.remediation ul {
+  margin: 0;
   padding-left: 20px;
   font-size: 13px;
 }
 
-#remediation ul li {
+.remediation ul li {
   margin-bottom: 4px;
 }
 
@@ -193,7 +239,6 @@ footer.app-footer {
   gap: 8px;
   font-size: 12.5px;
   flex-wrap: wrap;
-  margin-bottom: 10px;
 }
 
 .status-flow .pill {
@@ -215,49 +260,18 @@ footer.app-footer {
   font-size: 11.5px;
   color: var(--muted);
   font-style: italic;
+  margin: 10px 0 0;
 }
 
-/* Responsive breakpoints */
-@media (max-width: 768px) {
-  header.app-header {
-    padding: 18px 18px 14px;
-  }
-
-  main.app-main {
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .panel {
-    flex-basis: 100%;
-    min-width: 0;
-    padding: 16px;
-  }
-
-  footer.app-footer {
-    padding: 14px 18px 24px;
-  }
+.footer {
+  padding: 14px 16px 24px;
+  color: var(--muted);
+  font-size: 11.5px;
 }
 
-@media (max-width: 480px) {
-  header.app-header h1 {
-    font-size: 17px;
-  }
-
-  header.app-header p.sentence {
-    font-size: 13.5px;
-  }
-
-  .presets {
-    flex-direction: column;
-  }
-
-  .presets button {
-    width: 100%;
-    text-align: left;
-  }
-
-  pre#result {
+@media (min-width: 640px) {
+  .footer {
+    padding: 16px 32px 32px;
     font-size: 12px;
   }
 }
